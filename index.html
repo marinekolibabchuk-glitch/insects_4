@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Little Insects: Find the Pair!</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e8f5e9 0%, #fff9c4 100%);
+            color: #2e7d32;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: #1b5e20;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            font-size: 1.1rem;
+            color: #558b2f;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Стартовий екран */
+        .start-screen {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .icons-preview {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .start-screen h2 {
+            font-size: 1.8rem;
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .start-screen p {
+            font-size: 1.2rem;
+            color: #558b2f;
+            margin-bottom: 25px;
+        }
+
+        .action-btn {
+            background-color: #43a047;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .action-btn:hover {
+            background-color: #2e7d32;
+            transform: scale(1.05);
+        }
+
+        /* Ігрове поле */
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .column-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            color: #1b5e20;
+            margin-bottom: 5px;
+        }
+
+        .card {
+            background-color: #f1f8e9;
+            border: 3px solid #aed581;
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .card:hover {
+            background-color: #e8f5e9;
+            transform: translateY(-2px);
+            border-color: #43a047;
+        }
+
+        .card.selected {
+            background-color: #fff9c4;
+            border-color: #fbc02d;
+            box-shadow: 0 0 10px rgba(251, 192, 45, 0.5);
+        }
+
+        .card.matched {
+            background-color: #c8e6c9;
+            border-color: #2e7d32;
+            opacity: 0.7;
+            cursor: default;
+        }
+
+        .card-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-emoji {
+            font-size: 2.5rem;
+        }
+
+        .speak-icon-btn {
+            background: #ffb74d;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: transform 0.2s;
+        }
+
+        .speak-icon-btn:hover {
+            transform: scale(1.1);
+            background: #ffa726;
+        }
+
+        .game-status {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2e7d32;
+            min-height: 40px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .game-area {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🐝 Secret Life of Insects</h1>
+        <p class="subtitle">Interactive English Learning Game</p>
+    </header>
+
+    <div class="container">
+        <!-- Стартовий екран -->
+        <div id="startScreen" class="screen active">
+            <div class="start-screen">
+                <div class="icons-preview">
+                    <span>🐝</span>
+                    <span>🍯</span>
+                    <span>🐜</span>
+                    <span>⛰️</span>
+                </div>
+                <h2>Find the Pair!</h2>
+                <p>Connect each little insect to its home with English audio!</p>
+                <button class="action-btn" onclick="startGame()">
+                    ▶️ Start Game
+                </button>
+            </div>
+        </div>
+
+        <!-- Ігровий екран -->
+        <div id="gameScreen" class="screen">
+            <div class="game-status" id="gameStatus">Select an insect, then select its home!</div>
+            
+            <div class="game-area">
+                <!-- Колонка комах -->
+                <div class="column">
+                    <div class="column-title">Insects 🐞</div>
+                    <div id="insectsContainer" class="column"></div>
+                </div>
+                <!-- Колонка будиночків -->
+                <div class="column">
+                    <div class="column-title">Homes 🏡</div>
+                    <div id="homesContainer" class="column"></div>
+                </div>
+            </div>
+
+            <button class="action-btn" onclick="resetGame()" style="margin-top: 15px; background-color: #78909c;">
+                🔄 Restart
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Оновлені дані: 'Beehive' замість 'Honeycomb'
+        const pairsData = [
+            { id: 'bee', insectEmoji: '🐝', insectName: 'Bee', homeEmoji: '🍯', homeName: 'Beehive' },
+            { id: 'ant', insectEmoji: '🐜', insectName: 'Ant', homeEmoji: '⛰️', homeName: 'Anthill' },
+            { id: 'spider', insectEmoji: '🕷️', insectName: 'Spider', homeEmoji: '🕸️', homeName: 'Web' },
+            { id: 'butterfly', insectEmoji: '🦋', insectName: 'Butterfly', homeEmoji: '🌸', homeName: 'Flower' }
+        ];
+
+        let selectedInsect = null;
+        let matchedCount = 0;
+
+        let englishVoice = null;
+
+        function loadEnglishVoice() {
+            const voices = window.speechSynthesis.getVoices();
+            englishVoice = voices.find(v => v.lang.includes('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Oliver')))
+                        || voices.find(v => v.lang.includes('en-US') || v.lang.includes('en-GB'))
+                        || voices.find(v => v.lang.includes('en'));
+        }
+
+        window.speechSynthesis.onvoiceschanged = loadEnglishVoice;
+        loadEnglishVoice();
+
+        function speakEnglish(text) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            if (englishVoice) {
+                utterance.voice = englishVoice;
+            }
+            utterance.rate = 0.9;
+            utterance.pitch = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function startGame() {
+            document.getElementById('startScreen').classList.remove('active');
+            document.getElementById('gameScreen').classList.add('active');
+            speakEnglish("Find the pair. Connect each insect to its home!");
+            initGameField();
+        }
+
+        function initGameField() {
+            matchedCount = 0;
+            selectedInsect = null;
+            document.getElementById('gameStatus').innerText = "Select an insect, then select its home!";
+
+            const insectsContainer = document.getElementById('insectsContainer');
+            const homesContainer = document.getElementById('homesContainer');
+
+            insectsContainer.innerHTML = '';
+            homesContainer.innerHTML = '';
+
+            let shuffledInsects = [...pairsData].sort(() => Math.random() - 0.5);
+            let shuffledHomes = [...pairsData].sort(() => Math.random() - 0.5);
+
+            shuffledInsects.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.id = item.id;
+                card.innerHTML = `
+                    <div class="card-content">
+                        <span class="card-emoji">${item.insectEmoji}</span>
+                        <span>${item.insectName}</span>
+                    </div>
+                    <button class="speak-icon-btn" onclick="event.stopPropagation(); speakEnglish('${item.insectName}')" title="Listen">🔊</button>
+                `;
+                card.onclick = () => selectInsectCard(card, item);
+                insectsContainer.appendChild(card);
+            });
+
+            shuffledHomes.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.id = item.id;
+                card.innerHTML = `
+                    <div class="card-content">
+                        <span class="card-emoji">${item.homeEmoji}</span>
+                        <span>${item.homeName}</span>
+                    </div>
+                    <button class="speak-icon-btn" onclick="event.stopPropagation(); speakEnglish('${item.homeName}')" title="Listen">🔊</button>
+                `;
+                card.onclick = () => selectHomeCard(card, item);
+                homesContainer.appendChild(card);
+            });
+        }
+
+        function selectInsectCard(cardElement, item) {
+            if (cardElement.classList.contains('matched')) return;
+
+            document.querySelectorAll('#insectsContainer .card').forEach(c => c.classList.remove('selected'));
+            
+            cardElement.classList.add('selected');
+            selectedInsect = item;
+            speakEnglish(item.insectName);
+            document.getElementById('gameStatus').innerText = `Selected: ${item.insectName}. Now find its home!`;
+        }
+
+        function selectHomeCard(cardElement, homeItem) {
+            if (cardElement.classList.contains('matched')) return;
+
+            if (!selectedInsect) {
+                speakEnglish("Please select an insect first!");
+                document.getElementById('gameStatus').innerText = "⚠️ Please select an insect first!";
+                return;
+            }
+
+            if (selectedInsect.id === homeItem.id) {
+                speakEnglish(`Correct! This is a ${selectedInsect.insectName} and its ${homeItem.homeName}.`);
+                document.getElementById('gameStatus').innerText = `🌟 Correct! Great job!`;
+
+                const insectCard = document.querySelector(`#insectsContainer .card[data-id="${selectedInsect.id}"]`);
+                insectCard.classList.remove('selected');
+                insectCard.classList.add('matched');
+                cardElement.classList.add('matched');
+
+                selectedInsect = null;
+                matchedCount++;
+
+                if (matchedCount === pairsData.length) {
+                    setTimeout(() => {
+                        speakEnglish("Fantastic! You found all the pairs!");
+                        document.getElementById('gameStatus').innerText = "🎉 Fantastic! You completed the game!";
+                    }, 500);
+                }
+            } else {
+                speakEnglish("Oops, try again!");
+                document.getElementById('gameStatus').innerText = "❌ Oops! That's not the right home. Try again!";
+            }
+        }
+
+        function resetGame() {
+            initGameField();
+        }
+    </script>
+</body>
+</html>
